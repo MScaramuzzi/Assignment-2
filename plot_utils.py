@@ -75,3 +75,61 @@ def plot_freq_lbl_w_percentage(label_df_train:pd.DataFrame,
     plt.show()
     
     return dict_count
+
+
+
+def plot_f1_w_distribution(label_df_train: pd.DataFrame, f1s: dict, macro_f1s: dict, lbl_cols: list[str]) -> None:
+    plt.figure(figsize=(14, 6), dpi=300)
+    markers = ['o','X','d','*','p']
+    sc_colors = ['limegreen','magenta', 'deepskyblue', 'firebrick', 'orange']
+
+    for i, label in enumerate(lbl_cols):
+        class_count = label_df_train[label].sum() / len(label_df_train)
+
+        plt.bar(i, class_count, width=0.2, color='red', alpha=0.4, zorder=2)
+
+        for j, (model_name, scores) in enumerate(f1s.items()):
+            f1 = scores[i]
+            plt.scatter(i, f1, color=sc_colors[j], marker=markers[j],
+                        label=f'{model_name}' if i==0 else '', zorder=3)
+
+    # plot line connecting per-class f1s for each model
+    for j, scores in enumerate(f1s.values()):   
+        plt.plot(range(len(lbl_cols)), scores, color=sc_colors[j], linestyle='-', linewidth=1,
+                     zorder=1)
+
+    # Plot macro F1-scores
+    for i, avg_f1 in enumerate(macro_f1s.values()):
+        plt.scatter(len(lbl_cols), avg_f1, color=sc_colors[i], marker=markers[i])
+
+    plt.ylabel('F1-score')
+    plt.xticks(np.arange(len(lbl_cols)+1), labels=lbl_cols + ['Mean'])
+    plt.yticks(np.arange(0, 1.1, 0.1))
+    plt.legend(loc='upper left')
+    plt.grid(linestyle='dashed')
+    plt.ylim([0, 1])
+    plt.show()
+
+
+
+def plot_precision_recall_comparison(precisions: dict, recalls: dict) -> None:
+    plt.figure(figsize=(10, 6), dpi=300)
+    markers = ['o','X','d','*','p']
+    colors = ['limegreen','magenta', 'deepskyblue', 'firebrick', 'orange']
+
+    for i, model_name in enumerate(precisions.keys()):
+        precision = precisions[model_name]
+        recall = recalls[model_name]
+
+        plt.scatter(precision, recall,
+                    marker=markers[i], color=colors[i], label=f'{model_name}')
+
+    plt.title('Macro Average Precision-Recall Comparison')
+    plt.xlabel('Precision')
+    plt.ylabel('Recall')
+    plt.legend(loc='upper left')
+    plt.grid(True)
+    plt.grid(linestyle='dashed')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.show()
